@@ -72,8 +72,6 @@ public class CommandProcessor {
             System.out.printf("Writing output: %s\n", saveName);
             document.save(saveName);
             System.out.println("Done!");
-        } catch (IOException e) {
-            throw e;
         } finally {
             if(contentStream != null) contentStream.close();
             document.close();
