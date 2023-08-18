@@ -28,7 +28,7 @@ public class CommandProcessor {
      * Process the command send in
      * @param arguments list of arguments
      */
-    public void process(String[] arguments) throws NoSuchAlgorithmException, IOException {
+    public void process(String[] arguments) throws NoSuchAlgorithmException, IOException, IllegalArgumentException {
         switch (this.option) {
             // compare two file hash value
             case "-hash" -> compareFileHash(arguments[1], arguments[2]);
@@ -56,25 +56,21 @@ public class CommandProcessor {
     private void convertJPGToPDF(LinkedList<File> imageList, String saveName) throws IOException {
         if (imageList == null || imageList.isEmpty()) return;
         if (saveName == null || saveName.isEmpty()) saveName = "output.pdf";
-        PDDocument document = new PDDocument();
-        PDPageContentStream contentStream = null;
-        try {
+        try (PDDocument document = new PDDocument()) {
             while (!imageList.isEmpty()) {
                 File imageFile = imageList.pop();
                 System.out.printf("[+] Reading %s...", imageFile.getPath());
                 PDPage page = new PDPage(PDRectangle.A4);
                 document.addPage(page);
                 PDImageXObject imageXObject = PDImageXObject.createFromFile(imageFile.getPath(), document);
-                contentStream = new PDPageContentStream(document, page);
-                contentStream.drawImage(imageXObject, 0,0,PDRectangle.A4.getWidth(), PDRectangle.A4.getHeight());
+                try(PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                    contentStream.drawImage(imageXObject, 0,0,PDRectangle.A4.getWidth(), PDRectangle.A4.getHeight());
+                }
                 System.out.println("Done!");
             }
-            System.out.printf("Writing output: %s\n", saveName);
+            System.out.printf("[+] Writing output: %s...", saveName);
             document.save(saveName);
             System.out.println("Done!");
-        } finally {
-            if(contentStream != null) contentStream.close();
-            document.close();
         }
     }
 
@@ -88,6 +84,12 @@ public class CommandProcessor {
         File dir = new File(path);
         if (!dir.isDirectory()) return null;
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(fileExt));
+
+        // if file extension cannot done by lowercase try uppercase
+        if (files == null) {
+            files = dir.listFiles(((dir1, name) -> name.endsWith(fileExt.toUpperCase())));
+        }
+
         return (files != null) ? new LinkedList<>(Arrays.stream(files).toList()) : null;
     }
 
