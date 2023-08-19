@@ -2,7 +2,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-*.jar
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -39,3 +38,4 @@ build/
 .DS_Store
 /MyLittleTools.jar
 /split/
+*.jar

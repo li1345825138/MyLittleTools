@@ -1,3 +1,4 @@
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,7 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.LinkedList;
-import net.coobird.thumbnailator.Thumbnails;
+import javax.imageio.ImageIO;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -32,19 +33,35 @@ public class CommandProcessor {
         switch (this.option) {
             // compare two file hash value
             case "-hash" -> compareFileHash(arguments[1], arguments[2]);
-
-            // turn multiple webp images into jpg images format
             case "-w" -> {
-                LinkedList<File> imageFileList = getFilesFrom(arguments[1], ".webp");
-                convertWEBPToJPG(imageFileList);
+                LinkedList<File> imageList = getFilesFrom(arguments[1], ".webp");
+                convertWebpToJPG(imageList);
             }
-
             // convert multiple jpg images into single pdf
             case "-p" -> {
                 LinkedList<File> imageList = getFilesFrom(arguments[1], ".jpg");
                 convertJPGToPDF(imageList, arguments[2]);
             }
             default -> throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * convert webp images into jpg format
+     * @param webpList list of webp format images
+     */
+    private void convertWebpToJPG(LinkedList<File> webpList) throws IOException, NullPointerException {
+        if (webpList == null) return;
+        while (!webpList.isEmpty()) {
+            File webpImage = webpList.poll();
+            System.out.printf("[+] Reading: %s...\n", webpImage.getPath());
+            BufferedImage image = ImageIO.read(webpImage);
+            if (image == null) throw new NullPointerException("Error: ImageIO read null image");
+            String newImageName = webpImage.getPath().replace("webp", "jpg");
+            File outputJPG = new File(newImageName);
+            System.out.printf("[+] Writing: %s...", newImageName);
+            ImageIO.write(image, "jpg", outputJPG);
+            System.out.println("Done!");
         }
     }
 
@@ -64,7 +81,7 @@ public class CommandProcessor {
                 document.addPage(page);
                 PDImageXObject imageXObject = PDImageXObject.createFromFile(imageFile.getPath(), document);
                 try(PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                    contentStream.drawImage(imageXObject, 0,0,PDRectangle.A4.getWidth(), PDRectangle.A4.getHeight());
+                    contentStream.drawImage(imageXObject, 0,0, PDRectangle.A4.getWidth(), PDRectangle.A4.getHeight());
                 }
                 System.out.println("Done!");
             }
@@ -91,24 +108,6 @@ public class CommandProcessor {
         }
 
         return (files != null) ? new LinkedList<>(Arrays.stream(files).toList()) : null;
-    }
-
-    /**
-     * Accept a list of webp files and turn each of webp image into jpg format
-     * @param imageList webp format image file list
-     */
-    private void convertWEBPToJPG(LinkedList<File> imageList) throws IOException {
-        if (imageList == null) return;
-        String newFileName = null;
-        int subIndex = -1;
-        while (!imageList.isEmpty()) {
-            File currImage = imageList.pop();
-            System.out.printf("[+] Reading: %s...\n", currImage.getPath());
-            subIndex = currImage.getPath().lastIndexOf('.');
-            newFileName = currImage.getPath().substring(0, subIndex) + ".jpg";
-            Thumbnails.of(currImage).outputFormat("jpg").toFile(newFileName);
-            System.out.printf("[+] Writing: %s...\n", newFileName);
-        }
     }
 
     /**

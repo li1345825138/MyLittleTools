@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <profiles>
+        <profile>
+            <id>Central</id>
+            <repositories>
+                <repository>
+                    <id>Central</id>
+                    <name>Central Repository</name>
+                    <url>https://repo1.maven.org/maven2/</url>
+                </repository>
+            </repositories>
+        </profile>
+
+        <profile>
+            <id>JBoss</id>
+            <repositories>
+                <repository>
+                    <id>JBoss</id>
+                    <name>JBoss 3rd Party</name>
+                    <url>https://repository.jboss.org/nexus/content/repositories/thirdparty-releases/</url>
+                </repository>
+            </repositories>
+        </profile>
+
+        <profile>
+            <id>Mulesoft</id>
+            <repositories>
+                <repository>
+                    <id>Mulesoft</id>
+                    <name>Mulesoft Repository</name>
+                    <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
+                </repository>
+            </repositories>
+        </profile>
+
+        <profile>
+            <id>Clojars</id>
+            <repositories>
+                <repository>
+                    <id>Clojars</id>
+                    <name>Clojars Repository</name>
+                    <url>https://clojars.org/repo/</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>Central</activeProfile>
+        <activeProfile>JBoss</activeProfile>
+        <activeProfile>Mulesoft</activeProfile>
+        <activeProfile>Clojars</activeProfile>
+    </activeProfiles>
+</settings>
