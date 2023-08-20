@@ -75,7 +75,7 @@ public class CommandProcessor {
         if (saveName == null || saveName.isEmpty()) saveName = "output.pdf";
         try (PDDocument document = new PDDocument()) {
             while (!imageList.isEmpty()) {
-                File imageFile = imageList.pop();
+                File imageFile = imageList.poll();
                 System.out.printf("[+] Reading %s...", imageFile.getPath());
                 PDPage page = new PDPage(PDRectangle.A4);
                 document.addPage(page);
@@ -102,7 +102,7 @@ public class CommandProcessor {
         if (!dir.isDirectory()) return null;
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(fileExt));
 
-        // if file extension cannot done by lowercase try uppercase
+        // if file extension cannot be done by lowercase try uppercase
         if (files == null) {
             files = dir.listFiles(((dir1, name) -> name.endsWith(fileExt.toUpperCase())));
         }
