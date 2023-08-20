@@ -11,7 +11,6 @@ import javax.imageio.ImageIO;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 /**
@@ -77,11 +76,25 @@ public class CommandProcessor {
             while (!imageList.isEmpty()) {
                 File imageFile = imageList.poll();
                 System.out.printf("[+] Reading %s...", imageFile.getPath());
-                PDPage page = new PDPage(PDRectangle.A4);
+                PDPage page = new PDPage();
                 document.addPage(page);
                 PDImageXObject imageXObject = PDImageXObject.createFromFile(imageFile.getPath(), document);
-                try(PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                    contentStream.drawImage(imageXObject, 0,0, PDRectangle.A4.getWidth(), PDRectangle.A4.getHeight());
+
+                // current image width and height
+                float imageWidth = imageXObject.getWidth();
+                float imageHeight = imageXObject.getHeight();
+
+                // calculate image scale to fit
+                float scale = Math.min(page.getMediaBox().getWidth() / imageWidth, page.getMediaBox().getHeight() / imageHeight);
+                imageWidth *= scale;
+                imageHeight *= scale;
+
+                // make image in pdf page middle
+                float offsetX = (page.getMediaBox().getWidth() - imageWidth) * 0.5f;
+                float offsetY = (page.getMediaBox().getHeight() - imageHeight) * 0.5f;
+
+                try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                    contentStream.drawImage(imageXObject, offsetX, offsetY, imageWidth, imageHeight);
                 }
                 System.out.println("Done!");
             }
