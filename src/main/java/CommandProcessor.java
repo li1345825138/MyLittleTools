@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 /**
@@ -41,8 +42,26 @@ public class CommandProcessor {
                 LinkedList<File> imageList = getFilesFrom(arguments[1], ".jpg");
                 convertJPGToPDF(imageList, arguments[2]);
             }
+            // print help message
+            case "-h" -> printHelp();
             default -> throw new IllegalArgumentException();
         }
+    }
+
+    /**
+     * Print out help message
+     */
+    public static void printHelp() {
+        System.out.println("""
+                Usage: java -jar MyLittleTools option [argument1] [argument2] ...
+                    options:
+                        -hash: compare two file hash.
+                            -hash file1 file2
+                        -w: convert WEBP image into JPG.
+                            -w imageFolderPath
+                        -p: convert multiple jpg images into single pdf
+                            -p imageFolderPath finalSaveName
+                """);
     }
 
     /**
@@ -76,25 +95,12 @@ public class CommandProcessor {
             while (!imageList.isEmpty()) {
                 File imageFile = imageList.poll();
                 System.out.printf("[+] Reading %s...", imageFile.getPath());
-                PDPage page = new PDPage();
+                BufferedImage image = ImageIO.read(imageFile);
+                PDPage page = new PDPage(new PDRectangle(image.getWidth(), image.getHeight()));
                 document.addPage(page);
                 PDImageXObject imageXObject = PDImageXObject.createFromFile(imageFile.getPath(), document);
-
-                // current image width and height
-                float imageWidth = imageXObject.getWidth();
-                float imageHeight = imageXObject.getHeight();
-
-                // calculate image scale to fit
-                float scale = Math.min(page.getMediaBox().getWidth() / imageWidth, page.getMediaBox().getHeight() / imageHeight);
-                imageWidth *= scale;
-                imageHeight *= scale;
-
-                // make image in pdf page middle
-                float offsetX = (page.getMediaBox().getWidth() - imageWidth) * 0.5f;
-                float offsetY = (page.getMediaBox().getHeight() - imageHeight) * 0.5f;
-
                 try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                    contentStream.drawImage(imageXObject, offsetX, offsetY, imageWidth, imageHeight);
+                    contentStream.drawImage(imageXObject, 0, 0, image.getWidth(), image.getHeight());
                 }
                 System.out.println("Done!");
             }
