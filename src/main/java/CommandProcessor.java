@@ -7,7 +7,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import javax.imageio.ImageIO;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -34,16 +36,21 @@ public class CommandProcessor {
             // compare two file hash value
             case "-hash" -> compareFileHash(arguments[1], arguments[2]);
             case "-w" -> {
-                LinkedList<File> imageList = getFilesFrom(arguments[1], ".webp");
+                List<File> imageList = getFilesFrom(arguments[1], ".webp");
                 convertWebpToJPG(imageList);
             }
             // convert multiple jpg images into single pdf
             case "-p" -> {
-                LinkedList<File> imageList = getFilesFrom(arguments[1], ".jpg");
+                List<File> imageList = getFilesFrom(arguments[1], ".jpg");
                 convertJPGToPDF(imageList, arguments[2]);
             }
             // print help message
             case "-h" -> printHelp();
+            // merge pdfs
+            case "-m" -> {
+                List<File> pdfList = getFilesFrom(arguments[1], ".pdf");
+                mergePDF(pdfList, arguments[2]);
+            }
             default -> throw new IllegalArgumentException();
         }
     }
@@ -61,17 +68,42 @@ public class CommandProcessor {
                             -w imageFolderPath
                         -p: convert multiple jpg images into single pdf
                             -p imageFolderPath finalSaveName
+                        -m: merge list of pdf files into single pdf
+                            -m pdfFolderPath finalSaveName
                 """);
+    }
+
+    /**
+     * Merge list of pdf format file into one single pdf
+     * @param pdfList list of pdf files
+     * @param outputName final output name
+     */
+    private void mergePDF(List<File> pdfList, String outputName) throws IOException {
+        if (pdfList == null) return;
+        if (outputName == null || outputName.isEmpty()) outputName = "output.pdf";
+        LinkedList<File> linkedPDFList = (LinkedList<File>)pdfList;
+        PDFMergerUtility mergePDF = new PDFMergerUtility();
+        while (!linkedPDFList.isEmpty()) {
+            File pdfFile = linkedPDFList.poll();
+            System.out.printf("[+] Reading: %s...", pdfFile.getPath());
+            mergePDF.addSource(pdfFile);
+            System.out.println("Done!");
+        }
+        mergePDF.setDestinationFileName(outputName);
+        System.out.printf("[+] Writing output: %s", outputName);
+        mergePDF.mergeDocuments(null);
+        System.out.println("Done!");
     }
 
     /**
      * convert webp images into jpg format
      * @param webpList list of webp format images
      */
-    private void convertWebpToJPG(LinkedList<File> webpList) throws IOException, NullPointerException {
+    private void convertWebpToJPG(List<File> webpList) throws IOException, NullPointerException {
         if (webpList == null) return;
-        while (!webpList.isEmpty()) {
-            File webpImage = webpList.poll();
+        LinkedList<File> fileLinkedList = (LinkedList<File>) webpList;
+        while (!fileLinkedList.isEmpty()) {
+            File webpImage = fileLinkedList.poll();
             System.out.printf("[+] Reading: %s...\n", webpImage.getPath());
             BufferedImage image = ImageIO.read(webpImage);
             if (image == null) throw new NullPointerException("Error: ImageIO read null image");
@@ -88,12 +120,14 @@ public class CommandProcessor {
      * @param imageList a list of jpg files
      * @param saveName final output pdf save name
      */
-    private void convertJPGToPDF(LinkedList<File> imageList, String saveName) throws IOException {
+    private void convertJPGToPDF(List<File> imageList, String saveName) throws IOException {
         if (imageList == null || imageList.isEmpty()) return;
         if (saveName == null || saveName.isEmpty()) saveName = "output.pdf";
+
+        LinkedList<File> fileLinkedList = (LinkedList<File>) imageList;
         try (PDDocument document = new PDDocument()) {
-            while (!imageList.isEmpty()) {
-                File imageFile = imageList.poll();
+            while (!fileLinkedList.isEmpty()) {
+                File imageFile = fileLinkedList.poll();
                 System.out.printf("[+] Reading %s...", imageFile.getPath());
                 BufferedImage image = ImageIO.read(imageFile);
                 PDPage page = new PDPage(new PDRectangle(image.getWidth(), image.getHeight()));
@@ -116,7 +150,7 @@ public class CommandProcessor {
      * @param fileExt what is file extension for filter
      * @return list of specific file.
      */
-    private LinkedList<File> getFilesFrom(String path, String fileExt) {
+    private List<File> getFilesFrom(String path, String fileExt) {
         File dir = new File(path);
         if (!dir.isDirectory()) return null;
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(fileExt));
