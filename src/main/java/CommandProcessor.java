@@ -70,6 +70,7 @@ public class CommandProcessor {
                             -p imageFolderPath finalSaveName
                         -m: merge list of pdf files into single pdf
                             -m pdfFolderPath finalSaveName
+                        -h: print help message
                 """);
     }
 
