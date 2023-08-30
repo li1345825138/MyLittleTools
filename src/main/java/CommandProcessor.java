@@ -137,6 +137,7 @@ public class CommandProcessor {
                 try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
                     contentStream.drawImage(imageXObject, 0, 0, image.getWidth(), image.getHeight());
                 }
+                page.getResources().getCOSObject().clear();
                 System.out.println("Done!");
             }
             System.out.printf("[+] Writing output: %s...", saveName);
