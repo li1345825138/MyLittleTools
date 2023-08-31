@@ -80,9 +80,8 @@ public class CommandProcessor {
      * @param outputName final output name
      */
     private void mergePDF(List<File> pdfList, String outputName) throws IOException {
-        if (pdfList == null) return;
+        if (pdfList == null || pdfList.isEmpty() || !(pdfList instanceof LinkedList<File> linkedPDFList)) return;
         if (outputName == null || outputName.isEmpty()) outputName = "output.pdf";
-        LinkedList<File> linkedPDFList = (LinkedList<File>)pdfList;
         PDFMergerUtility mergePDF = new PDFMergerUtility();
         while (!linkedPDFList.isEmpty()) {
             File pdfFile = linkedPDFList.poll();
@@ -101,8 +100,7 @@ public class CommandProcessor {
      * @param webpList list of webp format images
      */
     private void convertWebpToJPG(List<File> webpList) throws IOException, NullPointerException {
-        if (webpList == null) return;
-        LinkedList<File> fileLinkedList = (LinkedList<File>) webpList;
+        if (webpList == null || webpList.isEmpty() || !(webpList instanceof LinkedList<File> fileLinkedList)) return;
         while (!fileLinkedList.isEmpty()) {
             File webpImage = fileLinkedList.poll();
             System.out.printf("[+] Reading: %s...\n", webpImage.getPath());
@@ -122,10 +120,8 @@ public class CommandProcessor {
      * @param saveName final output pdf save name
      */
     private void convertJPGToPDF(List<File> imageList, String saveName) throws IOException {
-        if (imageList == null || imageList.isEmpty()) return;
+        if (imageList == null || imageList.isEmpty() || !(imageList instanceof LinkedList<File> fileLinkedList)) return;
         if (saveName == null || saveName.isEmpty()) saveName = "output.pdf";
-
-        LinkedList<File> fileLinkedList = (LinkedList<File>) imageList;
         try (PDDocument document = new PDDocument()) {
             while (!fileLinkedList.isEmpty()) {
                 File imageFile = fileLinkedList.poll();
