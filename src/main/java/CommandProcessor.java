@@ -123,6 +123,7 @@ public class CommandProcessor {
         if (imageList == null || imageList.isEmpty() || !(imageList instanceof LinkedList<File> fileLinkedList)) return;
         if (saveName == null || saveName.isEmpty()) saveName = "output.pdf";
         try (PDDocument document = new PDDocument()) {
+            document.setResourceCache(new DefaultResourceCacheWrapper());
             while (!fileLinkedList.isEmpty()) {
                 File imageFile = fileLinkedList.poll();
                 System.out.printf("[+] Reading %s...", imageFile.getPath());
@@ -133,7 +134,6 @@ public class CommandProcessor {
                 try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
                     contentStream.drawImage(imageXObject, 0, 0, image.getWidth(), image.getHeight());
                 }
-                page.getResources().getCOSObject().clear();
                 System.out.println("Done!");
             }
             System.out.printf("[+] Writing output: %s...", saveName);
