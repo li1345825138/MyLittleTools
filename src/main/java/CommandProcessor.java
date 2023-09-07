@@ -1,3 +1,11 @@
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -8,13 +16,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import javax.imageio.ImageIO;
-import org.apache.pdfbox.multipdf.PDFMergerUtility;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 /**
  * @author li1345825138
@@ -126,7 +127,7 @@ public class CommandProcessor {
             document.setResourceCache(new DefaultResourceCacheWrapper());
             while (!fileLinkedList.isEmpty()) {
                 File imageFile = fileLinkedList.poll();
-                System.out.printf("[+] Reading %s...", imageFile.getPath());
+                System.out.printf("[+] Reading: %s...", imageFile.getPath());
                 BufferedImage image = ImageIO.read(imageFile);
                 PDPage page = new PDPage(new PDRectangle(image.getWidth(), image.getHeight()));
                 document.addPage(page);
