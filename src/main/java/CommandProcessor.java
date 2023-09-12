@@ -52,7 +52,7 @@ public class CommandProcessor {
                 List<File> pdfList = getFilesFrom(arguments[1], ".pdf");
                 mergePDF(pdfList, arguments[2]);
             }
-            default -> throw new IllegalArgumentException();
+            default -> throw new IllegalArgumentException("Unknown option");
         }
     }
 
@@ -91,7 +91,7 @@ public class CommandProcessor {
             System.out.println("Done!");
         }
         mergePDF.setDestinationFileName(outputName);
-        System.out.printf("[+] Writing output: %s", outputName);
+        System.out.printf("[+] Writing output: %s...", outputName);
         mergePDF.mergeDocuments(null);
         System.out.println("Done!");
     }
@@ -159,7 +159,7 @@ public class CommandProcessor {
             files = dir.listFiles(((dir1, name) -> name.endsWith(fileExt.toUpperCase())));
         }
 
-        return (files != null) ? new LinkedList<>(Arrays.stream(files).toList()) : null;
+        return (files != null) ? new LinkedList<>(Arrays.asList(files)) : null;
     }
 
     /**
