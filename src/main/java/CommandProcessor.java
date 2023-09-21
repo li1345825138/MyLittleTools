@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -52,8 +53,54 @@ public class CommandProcessor {
                 List<File> pdfList = getFilesFrom(arguments[1], ".pdf");
                 mergePDF(pdfList, arguments[2]);
             }
+            // merge images
+            case "-mi" -> {
+                List<File> imagesList = getFilesFrom(arguments[1], ".jpg");
+                meregeMultiImages(imagesList, arguments[2]);
+            }
             default -> throw new IllegalArgumentException("Unknown option");
         }
+    }
+
+    /**
+     * Merge multiple Images into one single JPG format image
+     * @param imagesList the list of images
+     * @param finalName final image save name
+     */
+    private void meregeMultiImages(List<File> imagesList, String finalName) throws IOException {
+        if (!(imagesList instanceof LinkedList<File> linkedImageList) || linkedImageList.isEmpty()) return;
+        LinkedList<BufferedImage> bImages = new LinkedList<>();
+
+        int width = 0;
+        int height = 0;
+        Graphics2D g2d = null;
+        // add all images into BufferedImage Object
+        try {
+            while (!linkedImageList.isEmpty()) {
+                File currImage = linkedImageList.poll();
+                BufferedImage temp = ImageIO.read(currImage);
+
+                // get maximum width and height
+                if (temp.getWidth() > width) width = temp.getWidth();
+                height += temp.getHeight();
+
+                // add image into buffer list
+                bImages.addLast(temp);
+            }
+            BufferedImage mergeImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            g2d = mergeImage.createGraphics();
+            int currentYPos = 0;
+            while (!bImages.isEmpty()) {
+                BufferedImage temp = bImages.poll();
+                g2d.drawImage(temp, 0, currentYPos, null);
+                currentYPos += temp.getHeight() + 1;
+            }
+            File mergeFile = new File(finalName);
+            ImageIO.write(mergeImage, "jpg", mergeFile);
+        } finally {
+            if (g2d != null) g2d.dispose();
+        }
+
     }
 
     /**
@@ -71,6 +118,7 @@ public class CommandProcessor {
                             -p imageFolderPath finalSaveName
                         -m: merge list of pdf files into single pdf
                             -m pdfFolderPath finalSaveName
+                        -mi: merge multiple images into single jpg format image (jpg format only) (not test yet)
                         -h: print help message
                 """);
     }
