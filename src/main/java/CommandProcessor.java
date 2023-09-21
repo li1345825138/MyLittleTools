@@ -71,6 +71,7 @@ public class CommandProcessor {
         if (!(imagesList instanceof LinkedList<File> linkedImageList) || linkedImageList.isEmpty()) return;
         LinkedList<BufferedImage> bImages = new LinkedList<>();
 
+
         int width = 0;
         int height = 0;
         Graphics2D g2d = null;
