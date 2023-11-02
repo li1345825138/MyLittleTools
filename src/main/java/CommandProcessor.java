@@ -34,27 +34,28 @@ public class CommandProcessor {
      * @param arguments list of arguments
      */
     public void process(String[] arguments) throws NoSuchAlgorithmException, IOException, IllegalArgumentException {
-        switch (this.option) {
+        OptionHashCodeEnum hashVal = OptionHashCodeEnum.valueOf(this.option.hashCode());
+        switch (hashVal) {
             // compare two file hash value
-            case "-hash" -> compareFileHash(arguments[1], arguments[2]);
-            case "-w" -> {
+            case HASH_COMPARE -> compareFileHash(arguments[1], arguments[2]);
+            case WEBP_TO_JPG -> {
                 List<File> imageList = getFilesFrom(arguments[1], ".webp");
                 convertWebpToJPG(imageList);
             }
             // convert multiple jpg images into single pdf
-            case "-p" -> {
+            case JPGS_TO_PDF -> {
                 List<File> imageList = getFilesFrom(arguments[1], ".jpg");
                 convertJPGToPDF(imageList, arguments[2]);
             }
             // print help message
-            case "-h" -> printHelp();
+            case HELP_MSG -> printHelp();
             // merge pdfs
-            case "-m" -> {
+            case MERGE_PDFS -> {
                 List<File> pdfList = getFilesFrom(arguments[1], ".pdf");
                 mergePDF(pdfList, arguments[2]);
             }
             // merge images
-            case "-mi" -> {
+            case MERGE_MULTI_JPGS -> {
                 List<File> imagesList = getFilesFrom(arguments[1], ".jpg");
                 meregeMultiImages(imagesList, arguments[2]);
             }
@@ -70,7 +71,6 @@ public class CommandProcessor {
     private void meregeMultiImages(List<File> imagesList, String finalName) throws IOException {
         if (!(imagesList instanceof LinkedList<File> linkedImageList) || linkedImageList.isEmpty()) return;
         LinkedList<BufferedImage> bImages = new LinkedList<>();
-
 
         int width = 0;
         int height = 0;
