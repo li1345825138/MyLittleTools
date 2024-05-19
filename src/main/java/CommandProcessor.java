@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author li1345825138
@@ -59,8 +60,31 @@ public class CommandProcessor {
                 List<File> imagesList = getFilesFrom(arguments[1], ".jpg");
                 meregeMultiImages(imagesList, arguments[2]);
             }
+            // extract images from pdf
+            case EXTRACT_IMAGES -> {
+
+            }
+            // random password
+            case RAND_PASS -> {
+                String symbols = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz0123456789!#$@";
+                int passLength = Integer.parseInt(arguments[1]);
+                StringBuilder finalPass = new StringBuilder();
+                Random randIndex = new Random(System.currentTimeMillis());
+                for (int i = 0; i < passLength ; i++) {
+                    finalPass.append(symbols.charAt(randIndex.nextInt(symbols.length())));
+                }
+                System.out.printf("Random Password: %s\n", finalPass);
+            }
             default -> throw new IllegalArgumentException("Unknown option");
         }
+    }
+
+    /**
+     * Extract all the images that merge in pdf
+     * @param filename pdf file name
+     */
+    private void extractImagesFromPDF(String filename) {
+
     }
 
     /**
@@ -120,6 +144,7 @@ public class CommandProcessor {
                         -m: merge list of pdf files into single pdf
                             -m pdfFolderPath finalSaveName
                         -mi: merge multiple images into single jpg format image (jpg format only) (not test yet)
+                        -randpass: generate specific length of password
                         -h: print help message
                 """);
     }

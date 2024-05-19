@@ -21,7 +21,13 @@ enum OptionHashCodeEnum {
     MERGE_PDFS(1504),
 
     // -mi: Merge multi JPGs into single JPG
-    MERGE_MULTI_JPGS(46729);
+    MERGE_MULTI_JPGS(46729),
+
+    // -extractImages
+    EXTRACT_IMAGES(2120062796),
+
+    // -randpass
+    RAND_PASS(519346403);
 
     /**
      * Enum custom value Con-structor
@@ -42,6 +48,8 @@ enum OptionHashCodeEnum {
             case 1499 -> HELP_MSG;
             case 1504 -> MERGE_PDFS;
             case 46729 -> MERGE_MULTI_JPGS;
+            case 2120062796 -> EXTRACT_IMAGES;
+            case 519346403 -> RAND_PASS;
             default -> null;
         };
     }
