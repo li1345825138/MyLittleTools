@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -36,7 +37,7 @@ public class CommandProcessor {
      */
     public void process(String[] arguments) throws NoSuchAlgorithmException, IOException, IllegalArgumentException {
         OptionHashCodeEnum hashVal = OptionHashCodeEnum.valueOf(this.option.hashCode());
-        switch (hashVal) {
+        switch (Objects.requireNonNull(hashVal)) {
             // compare two file hash value
             case HASH_COMPARE -> compareFileHash(arguments[1], arguments[2]);
             case WEBP_TO_JPG -> {
@@ -58,7 +59,7 @@ public class CommandProcessor {
             // merge images
             case MERGE_MULTI_JPGS -> {
                 List<File> imagesList = getFilesFrom(arguments[1], ".jpg");
-                meregeMultiImages(imagesList, arguments[2]);
+                mergeMultiImages(imagesList, arguments[2]);
             }
             // extract images from pdf
             case EXTRACT_IMAGES -> {
@@ -92,7 +93,7 @@ public class CommandProcessor {
      * @param imagesList the list of images
      * @param finalName final image save name
      */
-    private void meregeMultiImages(List<File> imagesList, String finalName) throws IOException {
+    private void mergeMultiImages(List<File> imagesList, String finalName) throws IOException {
         if (!(imagesList instanceof LinkedList<File> linkedImageList) || linkedImageList.isEmpty()) return;
         LinkedList<BufferedImage> bImages = new LinkedList<>();
 
