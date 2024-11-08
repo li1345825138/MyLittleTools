@@ -14,11 +14,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 /**
  * @author li1345825138
@@ -35,7 +35,7 @@ public class CommandProcessor {
      * Process the command send in
      * @param arguments list of arguments
      */
-    public void process(String[] arguments) throws NoSuchAlgorithmException, IOException, IllegalArgumentException {
+    public void process(String[] arguments) throws NoSuchAlgorithmException, IOException, IllegalArgumentException, SQLException, ClassNotFoundException {
         OptionHashCodeEnum hashVal = OptionHashCodeEnum.valueOf(this.option.hashCode());
         switch (Objects.requireNonNull(hashVal)) {
             // compare two file hash value
@@ -67,14 +67,11 @@ public class CommandProcessor {
             }
             // random password
             case RAND_PASS -> {
-                String symbols = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz0123456789!#$@";
                 int passLength = Integer.parseInt(arguments[1]);
-                StringBuilder finalPass = new StringBuilder();
-                Random randIndex = new Random(System.currentTimeMillis());
-                for (int i = 0; i < passLength ; i++) {
-                    finalPass.append(symbols.charAt(randIndex.nextInt(symbols.length())));
+                try (RandomPasswordGenerator passwordGenerator = new RandomPasswordGenerator(passLength)) {
+                    String randomPass = passwordGenerator.generateRandomPassword();
+                    System.out.printf("Random Password: %s\n", randomPass);
                 }
-                System.out.printf("Random Password: %s\n", finalPass);
             }
             default -> throw new IllegalArgumentException("Unknown option");
         }
