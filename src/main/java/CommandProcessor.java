@@ -224,12 +224,8 @@ public class CommandProcessor {
     private List<File> getFilesFrom(String path, String fileExt) {
         File dir = new File(path);
         if (!dir.isDirectory()) return null;
-        File[] files = dir.listFiles((dir1, name) -> name.endsWith(fileExt));
-
-        // if file extension cannot be done by lowercase try uppercase
-        if (files == null) {
-            files = dir.listFiles(((dir1, name) -> name.endsWith(fileExt.toUpperCase())));
-        }
+        String lowerCaseFileExt = fileExt.toLowerCase();
+        File[] files = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(lowerCaseFileExt));
 
         return (files != null) ? new LinkedList<>(Arrays.asList(files)) : null;
     }
