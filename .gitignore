@@ -39,3 +39,5 @@ build/
 /MyLittleTools.jar
 /split/
 *.jar
+/database.sql
+/error_log.log

@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +34,7 @@ public class CommandProcessor {
      * Process the command send in
      * @param arguments list of arguments
      */
-    public void process(String[] arguments) throws NoSuchAlgorithmException, IOException, IllegalArgumentException, SQLException, ClassNotFoundException {
+    public void process(String[] arguments) throws Exception {
         OptionHashCodeEnum hashVal = OptionHashCodeEnum.valueOf(this.option.hashCode());
         switch (Objects.requireNonNull(hashVal)) {
             // compare two file hash value
@@ -71,6 +70,12 @@ public class CommandProcessor {
                 try (RandomPasswordGenerator passwordGenerator = new RandomPasswordGenerator(passLength)) {
                     String randomPass = passwordGenerator.generateRandomPassword();
                     System.out.printf("Random Password: %s\n", randomPass);
+                }
+            }
+            // view sql
+            case VIEW_SQL -> {
+                try (SqliteViewer sqliteViewer = new SqliteViewer(arguments[1])) {
+                    sqliteViewer.viewSqliteDatabase();
                 }
             }
             default -> throw new IllegalArgumentException("Unknown option");
@@ -143,6 +148,8 @@ public class CommandProcessor {
                             -m pdfFolderPath finalSaveName
                         -mi: merge multiple images into single jpg format image (jpg format only) (not test yet)
                         -randpass: generate specific length of password
+                        -viewsql: view all passwords on database
+                            -viewsql databasePath
                         -h: print help message
                 """);
     }

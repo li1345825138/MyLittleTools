@@ -27,7 +27,10 @@ enum OptionHashCodeEnum {
     EXTRACT_IMAGES(2120062796),
 
     // -randpass
-    RAND_PASS(519346403);
+    RAND_PASS(519346403),
+
+    // -viewsql
+    VIEW_SQL(1571301436);
 
     /**
      * Enum custom value Con-structor
@@ -50,6 +53,7 @@ enum OptionHashCodeEnum {
             case 46729 -> MERGE_MULTI_JPGS;
             case 2120062796 -> EXTRACT_IMAGES;
             case 519346403 -> RAND_PASS;
+            case 1571301436 -> VIEW_SQL;
             default -> null;
         };
     }
