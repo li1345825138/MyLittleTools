@@ -78,7 +78,7 @@ public class RandomPasswordGenerator implements AutoCloseable {
      * @param length The length of random password
      */
     public RandomPasswordGenerator(int length) throws SQLException, ClassNotFoundException {
-        this.length = Math.max(length, 8);
+        this.length = (Math.max(length, 8) >= 1024) ? 1024 : length;
         File file = new File("./database.sql");
         if (!file.exists()) {
             this.sqlConnection = getSQLiteConnection("./database.sql");
