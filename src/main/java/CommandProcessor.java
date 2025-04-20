@@ -234,6 +234,10 @@ public class CommandProcessor {
         String lowerCaseFileExt = fileExt.toLowerCase();
         File[] files = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(lowerCaseFileExt));
 
+        // Sort the files by ascending order
+        if (files != null) {
+            Arrays.sort(files, (f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName()));
+        }
         return (files != null) ? new LinkedList<>(Arrays.asList(files)) : null;
     }
 
