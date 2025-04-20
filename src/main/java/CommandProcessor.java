@@ -96,40 +96,32 @@ public class CommandProcessor {
      * @param finalName final image save name
      */
     private void mergeMultiImages(List<File> imagesList, String finalName) throws IOException {
-        if (!(imagesList instanceof LinkedList<File> linkedImageList) || linkedImageList.isEmpty()) return;
-        LinkedList<BufferedImage> bImages = new LinkedList<>();
+        if (imagesList == null || imagesList.isEmpty()) return;
 
         int width = 0;
         int height = 0;
-        Graphics2D g2d = null;
-        // add all images into BufferedImage Object
+        for (File currImage : imagesList) {
+            BufferedImage temp = ImageIO.read(currImage);
+            if (temp.getWidth() > width) width = temp.getWidth();
+            height += temp.getHeight();
+        }
+
+        BufferedImage mergeImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = mergeImage.createGraphics();
         try {
-            while (!linkedImageList.isEmpty()) {
-                File currImage = linkedImageList.poll();
-                BufferedImage temp = ImageIO.read(currImage);
-
-                // get maximum width and height
-                if (temp.getWidth() > width) width = temp.getWidth();
-                height += temp.getHeight();
-
-                // add image into buffer list
-                bImages.addLast(temp);
-            }
-            BufferedImage mergeImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            g2d = mergeImage.createGraphics();
             int currentYPos = 0;
-            while (!bImages.isEmpty()) {
-                BufferedImage temp = bImages.poll();
+            for (File currImage : imagesList) {
+                BufferedImage temp = ImageIO.read(currImage);
                 g2d.drawImage(temp, 0, currentYPos, null);
                 currentYPos += temp.getHeight() + 1;
             }
             File mergeFile = new File(finalName);
             ImageIO.write(mergeImage, "jpg", mergeFile);
         } finally {
-            if (g2d != null) g2d.dispose();
+            g2d.dispose();
         }
-
     }
+
 
     /**
      * Print out help message
@@ -160,11 +152,10 @@ public class CommandProcessor {
      * @param outputName final output name
      */
     private void mergePDF(List<File> pdfList, String outputName) throws IOException {
-        if (pdfList == null || pdfList.isEmpty() || !(pdfList instanceof LinkedList<File> linkedPDFList)) return;
+        if (pdfList == null || pdfList.isEmpty()) return;
         if (outputName == null || outputName.isEmpty()) outputName = "output.pdf";
         PDFMergerUtility mergePDF = new PDFMergerUtility();
-        while (!linkedPDFList.isEmpty()) {
-            File pdfFile = linkedPDFList.poll();
+        for (File pdfFile : pdfList) {
             System.out.printf("[+] Reading: %s...", pdfFile.getPath());
             mergePDF.addSource(pdfFile);
             System.out.println("Done!");
@@ -175,14 +166,14 @@ public class CommandProcessor {
         System.out.println("Done!");
     }
 
+
     /**
      * convert webp images into jpg format
      * @param webpList list of webp format images
      */
     private void convertWebpToJPG(List<File> webpList) throws IOException, NullPointerException {
-        if (webpList == null || webpList.isEmpty() || !(webpList instanceof LinkedList<File> fileLinkedList)) return;
-        while (!fileLinkedList.isEmpty()) {
-            File webpImage = fileLinkedList.poll();
+        if (webpList == null || webpList.isEmpty()) return;
+        for (File webpImage : webpList) {
             System.out.printf("[+] Reading: %s...\n", webpImage.getPath());
             BufferedImage image = ImageIO.read(webpImage);
             if (image == null) throw new NullPointerException("Error: ImageIO read null image");
@@ -194,18 +185,18 @@ public class CommandProcessor {
         }
     }
 
+
     /**
      * Convert multiple JPG format images into a single PDF file
      * @param imageList a list of jpg files
      * @param saveName final output pdf save name
      */
     private void convertJPGToPDF(List<File> imageList, String saveName) throws IOException {
-        if (imageList == null || imageList.isEmpty() || !(imageList instanceof LinkedList<File> fileLinkedList)) return;
+        if (imageList == null || imageList.isEmpty()) return;
         if (saveName == null || saveName.isEmpty()) saveName = "output.pdf";
         try (PDDocument document = new PDDocument()) {
             document.setResourceCache(new DefaultResourceCacheWrapper());
-            while (!fileLinkedList.isEmpty()) {
-                File imageFile = fileLinkedList.poll();
+            for (File imageFile : imageList) {
                 System.out.printf("[+] Reading: %s...", imageFile.getPath());
                 BufferedImage image = ImageIO.read(imageFile);
                 PDPage page = new PDPage(new PDRectangle(image.getWidth(), image.getHeight()));
@@ -221,6 +212,7 @@ public class CommandProcessor {
             System.out.println("Done!");
         }
     }
+
 
     /**
      * Get all the files from given directory and file extension
