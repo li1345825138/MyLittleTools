@@ -1,6 +1,9 @@
+import java.io.BufferedInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Properties;
 
 /**
  * @author li1345825138
@@ -14,7 +17,7 @@ public class Main {
         } catch (Exception e) {
             logException(e);
             System.err.println(e.getLocalizedMessage());
-            CommandProcessor.printHelp();
+            printHelp();
         }
     }
 
@@ -27,6 +30,20 @@ public class Main {
             e.printStackTrace(printWriter);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    public static void printHelp() {
+        Properties properties = new Properties();
+        try (
+                InputStream input = CommandProcessor.class.getClassLoader().getResourceAsStream("message.properties");
+                BufferedInputStream bInput = (input != null) ? new BufferedInputStream(input) : null
+        ) {
+            properties.load(bInput);
+            System.out.println(properties.getProperty("HELP_MESSAGE"));
+        } catch (Exception e) {
+            System.err.println("Can't Read message properties file from resource stream: " + e.getMessage());
+            System.exit(1);
         }
     }
 }

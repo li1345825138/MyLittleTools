@@ -8,8 +8,10 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * @author li1345825138
@@ -49,7 +52,7 @@ public class CommandProcessor {
                 convertJPGToPDF(imageList, arguments[2]);
             }
             // print help message
-            case HELP_MSG -> printHelp();
+            case HELP_MSG -> Main.printHelp();
             // merge pdfs
             case MERGE_PDFS -> {
                 List<File> pdfList = getFilesFrom(arguments[1], ".pdf");
@@ -120,30 +123,6 @@ public class CommandProcessor {
         } finally {
             g2d.dispose();
         }
-    }
-
-
-    /**
-     * Print out help message
-     */
-    public static void printHelp() {
-        System.out.println("""
-                Usage: java -jar MyLittleTools option [argument1] [argument2] ...
-                    options:
-                        -hash: compare two file hash.
-                            -hash file1 file2
-                        -w: convert WEBP image into JPG.
-                            -w imageFolderPath
-                        -p: convert multiple jpg images into single pdf
-                            -p imageFolderPath finalSaveName
-                        -m: merge list of pdf files into single pdf
-                            -m pdfFolderPath finalSaveName
-                        -mi: merge multiple images into single jpg format image (jpg format only) (not test yet)
-                        -randpass: generate specific length of password
-                        -viewsql: view all passwords on database
-                            -viewsql databasePath
-                        -h: print help message
-                """);
     }
 
     /**

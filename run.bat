@@ -1,2 +1,2 @@
 @ECHO off
-java -jar MyLittleTools.jar %1 %2 %3
+java -jar MyLittleTools.jar %1 %2 %3 %4
