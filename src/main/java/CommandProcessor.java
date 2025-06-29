@@ -1,9 +1,11 @@
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.Loader;
 
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
@@ -62,7 +64,7 @@ public class CommandProcessor {
             }
             // extract images from pdf
             case EXTRACT_IMAGES -> {
-
+                extractImagesFromPDF(arguments[1], arguments[2]);
             }
             // random password
             case RAND_PASS -> {
@@ -86,8 +88,21 @@ public class CommandProcessor {
      * Extract all the images that merge in pdf
      * @param filename pdf file name
      */
-    private void extractImagesFromPDF(String filename) {
-
+    private void extractImagesFromPDF(String filename, String directoryPath) throws IOException {
+        try (PDDocument document = Loader.loadPDF(new File(filename))) {
+            for (int i = 0; i < document.getNumberOfPages(); i++) {
+                PDPage page = document.getPage(i);
+                for (COSName XObjectName : page.getResources().getXObjectNames()) {
+                    PDImageXObject image = (PDImageXObject) page.getResources().getXObject(XObjectName);
+                    if (image != null) {
+                        BufferedImage bufferedImage = image.getImage();
+                        File outputFile = new File(String.format("%s\\image-%4d.jpg", directoryPath, i));
+                        ImageIO.write(bufferedImage, "jpg", outputFile);
+                        System.out.printf("Writing Image: %s\n", outputFile.getAbsolutePath());
+                    }
+                }
+            }
+        }
     }
 
     /**
