@@ -23,15 +23,11 @@ import java.util.Objects;
  * @author li1345825138
  * @date 2023/7/18
  */
-public class CommandProcessor {
-    private final String option;
-
-    public CommandProcessor(String option) {
-        this.option = option;
-    }
+public record CommandProcessor(String option) {
 
     /**
      * Process the command send in
+     *
      * @param arguments list of arguments
      */
     public void process(String[] arguments) throws Exception {
@@ -84,16 +80,19 @@ public class CommandProcessor {
 
     /**
      * Extract all the images that merge in pdf
+     *
      * @param filename pdf file name
      */
+    @SuppressWarnings("unused")
     private void extractImagesFromPDF(String filename) {
 
     }
 
     /**
      * Merge multiple Images into one single JPG format image
+     *
      * @param imagesList the list of images
-     * @param finalName final image save name
+     * @param finalName  final image save name
      */
     private void mergeMultiImages(List<File> imagesList, String finalName) throws IOException {
         if (imagesList == null || imagesList.isEmpty()) return;
@@ -124,7 +123,8 @@ public class CommandProcessor {
 
     /**
      * Merge list of pdf format file into one single pdf
-     * @param pdfList list of pdf files
+     *
+     * @param pdfList    list of pdf files
      * @param outputName final output name
      */
     private void mergePDF(List<File> pdfList, String outputName) throws IOException {
@@ -145,6 +145,7 @@ public class CommandProcessor {
 
     /**
      * convert webp images into jpg format
+     *
      * @param webpList list of webp format images
      */
     private void convertWebpToJPG(List<File> webpList) throws IOException, NullPointerException {
@@ -164,8 +165,9 @@ public class CommandProcessor {
 
     /**
      * Convert multiple JPG format images into a single PDF file
+     *
      * @param imageList a list of jpg files
-     * @param saveName final output pdf save name
+     * @param saveName  final output pdf save name
      */
     private void convertJPGToPDF(List<File> imageList, String saveName) throws IOException {
         if (imageList == null || imageList.isEmpty()) return;
@@ -192,10 +194,12 @@ public class CommandProcessor {
 
     /**
      * Get all the files from given directory and file extension
-     * @param path where is file parent folder locate
+     *
+     * @param path    where is file parent folder locate
      * @param fileExt what is file extension for filter
      * @return list of specific file.
      */
+    @SuppressWarnings("unused")
     private List<File> getFilesFrom(String path, String fileExt) {
         File dir = new File(path);
         if (!dir.isDirectory()) return null;
@@ -211,6 +215,7 @@ public class CommandProcessor {
 
     /**
      * Turn Hash bytes array into hex string
+     *
      * @param hashBytes hash bytes array
      * @return hex string
      */
@@ -225,6 +230,7 @@ public class CommandProcessor {
 
     /**
      * Compare two file hash and show there result
+     *
      * @param file1 original file path
      * @param file2 compare file path
      */
