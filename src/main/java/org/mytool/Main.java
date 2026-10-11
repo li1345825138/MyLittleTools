@@ -1,3 +1,5 @@
+package org.mytool;
+
 import java.io.BufferedInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.util.Properties;
  * @date 2023/7/18
  */
 public class Main {
+
     public static void main(String[] args) {
         // No arguments at all is a request for help, not a usage error.
         if (args.length == 0) {
@@ -26,7 +29,12 @@ public class Main {
         }
 
         try {
-            new CommandProcessor(option).process(Arrays.copyOfRange(args, 1, args.length));
+            new CommandProcessor(option, Progress.console())
+                    .process(Arrays.copyOfRange(args, 1, args.length));
+        } catch (UsageException e) {
+            // The user's input failed a Tool's precondition, not the program.
+            System.err.println(e.getMessage());
+            System.exit(2);
         } catch (Exception e) {
             logException(e);
             System.err.println(e.getLocalizedMessage());
@@ -49,7 +57,7 @@ public class Main {
     public static void printHelp() {
         Properties properties = new Properties();
         try (
-                InputStream input = CommandProcessor.class.getClassLoader().getResourceAsStream("message.properties");
+                InputStream input = Main.class.getClassLoader().getResourceAsStream("message.properties");
                 BufferedInputStream bInput = (input != null) ? new BufferedInputStream(input) : null
         ) {
             properties.load(bInput);

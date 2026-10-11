@@ -1,3 +1,5 @@
+package org.mytool;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -52,13 +54,15 @@ public class SqliteViewer implements AutoCloseable {
 	 * @param location location of sqlite database
 	 * @throws SQLException throw exception if can't get database location
 	 * @throws ClassNotFoundException throw exception if can't get database location
+	 * @throws UsageException if the database file does not exist
 	 */
 	public SqliteViewer(String location) throws SQLException, ClassNotFoundException {
 		File file = new File(location);
-		if (file.exists()) {
-			sqliteConnection = getSQLiteConnection(location);
-			statement = sqliteConnection.createStatement();
+		if (!file.exists()) {
+			throw new UsageException(location + " does not exist");
 		}
+		sqliteConnection = getSQLiteConnection(location);
+		statement = sqliteConnection.createStatement();
 	}
 
 	/**

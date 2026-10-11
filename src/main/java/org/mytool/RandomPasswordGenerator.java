@@ -1,3 +1,5 @@
+package org.mytool;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -74,11 +76,21 @@ public class RandomPasswordGenerator implements AutoCloseable {
     }
 
     /**
+     * Keep a requested length inside the range the help text promises, so a
+     * zero or negative length cannot spin the generator forever.
+     * @param requested the length the user asked for
+     * @return the requested length clamped to 8..1024
+     */
+    static int clampLength(int requested) {
+        return Math.min(Math.max(requested, 8), 1024);
+    }
+
+    /**
      * Constructor the random pass class
      * @param length The length of random password
      */
     public RandomPasswordGenerator(int length) throws SQLException, ClassNotFoundException {
-        this.length = (Math.max(length, 8) >= 1024) ? 1024 : length;
+        this.length = clampLength(length);
         File file = new File("./database.sql");
         if (!file.exists()) {
             this.sqlConnection = getSQLiteConnection("./database.sql");
@@ -95,19 +107,17 @@ public class RandomPasswordGenerator implements AutoCloseable {
      * @return random password
      */
     public String generateRandomPassword() throws SQLException {
-        StringBuilder sb = new StringBuilder();
         Random random = new Random(System.currentTimeMillis());
         int symbolLength = symbols.length();
-        char currChar;
         String randomPass;
-        int index;
         do {
+            // Built fresh on each attempt: reusing one builder would append to
+            // the rejected candidate and return a longer password than asked for.
+            StringBuilder candidate = new StringBuilder(this.length);
             for (int i = 0; i < this.length; i++) {
-                index = random.nextInt(symbolLength);
-                currChar = symbols.charAt(index);
-                sb.append(currChar);
+                candidate.append(symbols.charAt(random.nextInt(symbolLength)));
             }
-            randomPass = sb.toString();
+            randomPass = candidate.toString();
         } while (isOnDatabase(randomPass));
         updateDatabase(randomPass);
         return randomPass;

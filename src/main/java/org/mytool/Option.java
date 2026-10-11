@@ -1,3 +1,5 @@
+package org.mytool;
+
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -27,9 +29,6 @@ enum Option {
 
     // -mi: Merge multi JPGs into single JPG
     MERGE_MULTI_JPGS("-mi", 2),
-
-    // -extractImages: extract images from pdf
-    EXTRACT_IMAGES("-extractImages", 2),
 
     // -randpass: generate a random password
     RAND_PASS("-randpass", 1),
