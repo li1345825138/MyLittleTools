@@ -1,6 +1,7 @@
 # Build artifacts
 *.jar
 /MyLittleTools.jar
+/target/
 
 # Runtime generated
 /database.sql
