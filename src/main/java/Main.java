@@ -3,6 +3,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -11,13 +12,25 @@ import java.util.Properties;
  */
 public class Main {
     public static void main(String[] args) {
+        // No arguments at all is a request for help, not a usage error.
+        if (args.length == 0) {
+            printHelp();
+            return;
+        }
+
+        int givenArgs = args.length - 1;
+        Option option = Option.resolve(args[0]).orElse(null);
+        if (option == null || givenArgs < option.argCount()) {
+            printHelp();
+            System.exit(2);
+        }
+
         try {
-            CommandProcessor commandProcessor = new CommandProcessor(args[0]);
-            commandProcessor.process(args);
+            new CommandProcessor(option).process(Arrays.copyOfRange(args, 1, args.length));
         } catch (Exception e) {
             logException(e);
             System.err.println(e.getLocalizedMessage());
-            printHelp();
+            System.exit(1);
         }
     }
 

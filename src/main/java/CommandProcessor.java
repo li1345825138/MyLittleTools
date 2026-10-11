@@ -15,46 +15,45 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author li1345825138
  * @date 2023/7/18
  */
-public record CommandProcessor(String option) {
+record CommandProcessor(Option option) {
 
     /**
      * Process the command send in
      *
-     * @param arguments list of arguments
+     * @param arguments the arguments this option expects, excluding the option name itself
      */
     public void process(String[] arguments) throws Exception {
-        OptionHashCodeEnum hashVal = OptionHashCodeEnum.valueOf(this.option.hashCode());
-        switch (Objects.requireNonNull(hashVal)) {
+        switch (option) {
             // compare two file hash value
-            case HASH_COMPARE -> compareFileHash(arguments[1], arguments[2]);
+            case HASH_COMPARE -> compareFileHash(arguments[0], arguments[1]);
             case WEBP_TO_JPG -> {
-                List<File> imageList = getFilesFrom(arguments[1], ".webp");
+                List<File> imageList = getFilesFrom(arguments[0], ".webp");
                 convertWebpToJPG(imageList);
             }
             // convert multiple jpg images into single pdf
             case JPGS_TO_PDF -> {
-                List<File> imageList = getFilesFrom(arguments[1], ".jpg");
-                convertJPGToPDF(imageList, arguments[2]);
+                List<File> imageList = getFilesFrom(arguments[0], ".jpg");
+                convertJPGToPDF(imageList, arguments[1]);
             }
             // print help message
             case HELP_MSG -> Main.printHelp();
             // merge pdfs
             case MERGE_PDFS -> {
-                List<File> pdfList = getFilesFrom(arguments[1], ".pdf");
-                mergePDF(pdfList, arguments[2]);
+                List<File> pdfList = getFilesFrom(arguments[0], ".pdf");
+                mergePDF(pdfList, arguments[1]);
             }
             // merge images
             case MERGE_MULTI_JPGS -> {
-                List<File> imagesList = getFilesFrom(arguments[1], ".jpg");
-                mergeMultiImages(imagesList, arguments[2]);
+                List<File> imagesList = getFilesFrom(arguments[0], ".jpg");
+                mergeMultiImages(imagesList, arguments[1]);
             }
             // extract images from pdf
             case EXTRACT_IMAGES -> {
@@ -62,7 +61,7 @@ public record CommandProcessor(String option) {
             }
             // random password
             case RAND_PASS -> {
-                int passLength = Integer.parseInt(arguments[1]);
+                int passLength = Integer.parseInt(arguments[0]);
                 try (RandomPasswordGenerator passwordGenerator = new RandomPasswordGenerator(passLength)) {
                     String randomPass = passwordGenerator.generateRandomPassword();
                     System.out.printf("Random Password: %s\n", randomPass);
@@ -70,11 +69,13 @@ public record CommandProcessor(String option) {
             }
             // view sql
             case VIEW_SQL -> {
-                try (SqliteViewer sqliteViewer = new SqliteViewer(arguments[1])) {
+                try (SqliteViewer sqliteViewer = new SqliteViewer(arguments[0])) {
                     sqliteViewer.viewSqliteDatabase();
                 }
             }
-            default -> throw new IllegalArgumentException("Unknown option");
+            // Guards against a new Option constant silently doing nothing:
+            // a statement switch over an enum is not checked for exhaustiveness.
+            default -> throw new IllegalStateException(option + " has no handler");
         }
     }
 
@@ -199,7 +200,6 @@ public record CommandProcessor(String option) {
      * @param fileExt what is file extension for filter
      * @return list of specific file.
      */
-    @SuppressWarnings("unused")
     private List<File> getFilesFrom(String path, String fileExt) {
         File dir = new File(path);
         if (!dir.isDirectory()) return null;
@@ -220,12 +220,7 @@ public record CommandProcessor(String option) {
      * @return hex string
      */
     private String getHexFromHash(byte[] hashBytes) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (byte b : hashBytes) {
-            int bt = b & 0xff;
-            stringBuilder.append((bt < 16) ? 0 : Integer.toHexString(bt));
-        }
-        return stringBuilder.toString().toUpperCase();
+        return HexFormat.of().withUpperCase().formatHex(hashBytes);
     }
 
     /**
