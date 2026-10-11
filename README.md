@@ -11,7 +11,6 @@ A collection of useful small tools written in Java for various everyday tasks in
 - Multiple JPG images merging into one
 - Random password generator with history tracking
 - SQLite database viewer for password history
-- Extract images from PDF (planned feature)
 
 ## Tech Stack
 
@@ -84,17 +83,19 @@ View all previously generated passwords stored in the SQLite database.
 java -jar MyLittleTools-jar-with-dependencies.jar -viewsql databasePath
 ```
 
-#### Extract Images from PDF (Not Implemented)
-This feature is planned but not yet implemented.
-```bash
-java -jar MyLittleTools-jar-with-dependencies.jar -extractImages pdfFileName targetDirectory
-```
-
 #### Help
 Display this help message.
 ```bash
 java -jar MyLittleTools-jar-with-dependencies.jar -h
 ```
+
+## Exit Codes
+
+- `0` — success, including a help request (`-h`, or no arguments at all)
+- `1` — internal failure, such as an unreadable file
+- `2` — usage error: an unknown option, too few arguments, a directory with no matching files, or a blank output name
+
+Recorded in `docs/adr/0001-cli-exit-codes.md`.
 
 ## Notes
 
@@ -102,4 +103,3 @@ java -jar MyLittleTools-jar-with-dependencies.jar -h
 - The random password generator creates passwords with alphanumeric characters and special symbols (!#$@)
 - Generated passwords are automatically stored in a SQLite database named `database.sql` in the current directory to prevent duplicates
 - All operations provide progress feedback in the console
-- The "extract images from PDF" feature is planned but not yet implemented
