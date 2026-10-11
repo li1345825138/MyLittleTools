@@ -1,138 +1,77 @@
 package org.mytool;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.security.SecureRandom;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Random;
 
 /**
- * Generate random password class
+ * Generates random passwords that a PasswordStore has not handed out before.
+ *
  * @author li1345825138
  * @date 11/7/2024
  */
-public class RandomPasswordGenerator implements AutoCloseable {
+final class RandomPasswordGenerator {
+
     // password symbols
-    private static final String symbols = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz0123456789!#$@";
+    private static final String SYMBOLS =
+            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz0123456789!#$@";
 
-    // password length
-    private int length;
+    /** Where the help text says a password length starts. */
+    private static final int MIN_LENGTH = 8;
 
-    // sql connection
-    private Connection sqlConnection;
-
-    // sql execute statement
-    private Statement statement;
+    /** Where the help text says a password length ends. */
+    private static final int MAX_LENGTH = 1024;
 
     /**
-     * Get SQLite Driver connection
-     * @param location the location of sqlite database
-     * @throws ClassNotFoundException throw exception if JDBC is not found
-     * @throws SQLException throw exception if can't get database location
+     * How many times to regenerate when the store already holds the candidate.
+     * With 62 symbols and a floor of 8 characters this is never reached in
+     * practice; it exists so an exhausted space reports a failure instead of
+     * spinning forever.
      */
-    private Connection getSQLiteConnection(String location) throws ClassNotFoundException, SQLException {
-        Class.forName("org.sqlite.JDBC");
-        String formatURL = String.format("jdbc:sqlite:%s", location);
-        return DriverManager.getConnection(formatURL);
-    }
+    private static final int MAX_ATTEMPTS = 100;
 
-    /**
-     * Store new random password into database
-     * @param randPassword new random password
-     */
-    private void updateDatabase(String randPassword) throws SQLException {
-        String insertStatement = "INSERT INTO prevPass (password) VALUES (?)";
-        PreparedStatement preparedStatement = this.sqlConnection.prepareStatement(insertStatement);
-        preparedStatement.setString(1, randPassword);
-        preparedStatement.executeUpdate();
-    }
+    private final PasswordStore store;
+    private final Random random = new SecureRandom();
 
-    /**
-     * Check if current random password is already on database
-     * @param randPassword new random password
-     * @return true if already exists on database, otherwise false
-     * @throws SQLException throw if any sql exception cause
-     */
-    private boolean isOnDatabase(String randPassword) throws SQLException {
-        if (randPassword == null || randPassword.isEmpty()) return true;
-        String existsQuery = "SELECT EXISTS (SELECT 1 FROM prevPass WHERE password=?)";
-        PreparedStatement preparedStatement = this.sqlConnection.prepareStatement(existsQuery);
-        preparedStatement.setString(1, randPassword);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        resultSet.next();
-        return resultSet.getInt(1) == 1;
-    }
-
-    /**
-     * Create database if not exists
-     * @throws SQLException
-     */
-    private void createTableIfNotExists() throws SQLException {
-        this.statement.executeUpdate("CREATE TABLE IF NOT EXISTS prevPass (id INTEGER PRIMARY KEY AUTOINCREMENT, password TEXT)");
-        this.statement.executeUpdate("CREATE INDEX idx_password ON prevPass (password)");
+    RandomPasswordGenerator(PasswordStore store) {
+        this.store = store;
     }
 
     /**
      * Keep a requested length inside the range the help text promises, so a
      * zero or negative length cannot spin the generator forever.
+     *
      * @param requested the length the user asked for
      * @return the requested length clamped to 8..1024
      */
     static int clampLength(int requested) {
-        return Math.min(Math.max(requested, 8), 1024);
+        return Math.min(Math.max(requested, MIN_LENGTH), MAX_LENGTH);
     }
 
     /**
-     * Constructor the random pass class
-     * @param length The length of random password
+     * Generate a password and store it.
+     *
+     * @param requestedLength how long the password should be
+     * @return a password the store had not seen before
+     * @throws SQLException if the store cannot be written to
      */
-    public RandomPasswordGenerator(int length) throws SQLException, ClassNotFoundException {
-        this.length = clampLength(length);
-        File file = new File("./database.sql");
-        if (!file.exists()) {
-            this.sqlConnection = getSQLiteConnection("./database.sql");
-            this.statement = this.sqlConnection.createStatement();
-            createTableIfNotExists();
-        } else {
-            this.sqlConnection = getSQLiteConnection("./database.sql");
-            this.statement = this.sqlConnection.createStatement();
-        }
-    }
-
-    /**
-     * Generate random password
-     * @return random password
-     */
-    public String generateRandomPassword() throws SQLException {
-        Random random = new Random(System.currentTimeMillis());
-        int symbolLength = symbols.length();
-        String randomPass;
-        do {
-            // Built fresh on each attempt: reusing one builder would append to
-            // the rejected candidate and return a longer password than asked for.
-            StringBuilder candidate = new StringBuilder(this.length);
-            for (int i = 0; i < this.length; i++) {
-                candidate.append(symbols.charAt(random.nextInt(symbolLength)));
+    String generate(int requestedLength) throws SQLException {
+        int length = clampLength(requestedLength);
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            String candidate = randomString(length);
+            if (store.storeIfAbsent(candidate)) {
+                return candidate;
             }
-            randomPass = candidate.toString();
-        } while (isOnDatabase(randomPass));
-        updateDatabase(randomPass);
-        return randomPass;
+        }
+        throw new IllegalStateException(
+                "Could not generate an unused password in " + MAX_ATTEMPTS + " attempts");
     }
 
-    /**
-     * Close sql resources
-     * @throws SQLException
-     */
-    public void close() throws SQLException {
-        if (this.statement != null) {
-            this.statement.close();
+    private String randomString(int length) {
+        StringBuilder candidate = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            candidate.append(SYMBOLS.charAt(random.nextInt(SYMBOLS.length())));
         }
-        if (this.sqlConnection != null) {
-            this.sqlConnection.close();
-        }
+        return candidate.toString();
     }
 }

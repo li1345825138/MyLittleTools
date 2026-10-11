@@ -11,6 +11,9 @@ import java.util.List;
  */
 record CommandProcessor(Option option, Progress progress) {
 
+    /** Where -randpass keeps the passwords it has generated before. */
+    private static final Path DEFAULT_DATABASE = Path.of("./database.sql");
+
     /**
      * Process the command send in
      *
@@ -66,16 +69,18 @@ record CommandProcessor(Option option, Progress progress) {
     }
 
     private void generatePassword(String[] arguments) throws Exception {
-        int passLength = parseLength(arguments[0]);
-        try (RandomPasswordGenerator passwordGenerator = new RandomPasswordGenerator(passLength)) {
-            String randomPass = passwordGenerator.generateRandomPassword();
-            System.out.printf("Random Password: %s\n", randomPass);
+        int length = parseLength(arguments[0]);
+        try (PasswordStore store = PasswordStore.create(DEFAULT_DATABASE)) {
+            String password = new RandomPasswordGenerator(store).generate(length);
+            System.out.printf("Random Password: %s\n", password);
         }
     }
 
     private void viewSqlite(String[] arguments) throws Exception {
-        try (SqliteViewer sqliteViewer = new SqliteViewer(arguments[0])) {
-            sqliteViewer.viewSqliteDatabase();
+        try (PasswordStore store = PasswordStore.open(Path.of(arguments[0]))) {
+            List<String> passwords = store.all();
+            passwords.forEach(System.out::println);
+            System.out.printf("Total Records: %d%n", passwords.size());
         }
     }
 
